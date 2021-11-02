@@ -9,10 +9,17 @@ const server = http.createServer(function (req, res) {
   let elem = getMatchingRedirect(data, req.url);
 
   if(elem !== undefined){
-    res.writeHead(302, {
-      location: elem.url.res,
-    });
-    res.end();
+    if(elem.url.mode == "text"){
+      res.writeHead(200);
+      res.write(elem.url.res);
+      res.end();
+    }
+    else{
+      res.writeHead(302, {
+        location: elem.url.res,
+      });
+      res.end();
+    }
   } else {
     // do a 404 redirect
     elem = getMatchingRedirect(data, '404NotFound');
@@ -59,11 +66,19 @@ function getMatchingRedirect(data, url){
       for(let i=1;i<=regex.length;i++){
         replacedUrl = replacedUrl.replace("$" + i, regex[i]);
       }
+      console.log("replacedUrl: " + replacedUrl);
       return true;
     }
   })
   if(match !== undefined){
-    match.url.res = replacedUrl;
-    return match;
+    // let newMatch = Object.assign([], match);
+    // newMatch.url.res = replacedUrl;
+    return {
+      url: {
+        mode: match.url.mode,
+        pattern: match.url.pattern,
+        res: replacedUrl
+      }
+    };
   }
 }
