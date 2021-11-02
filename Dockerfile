@@ -1,5 +1,6 @@
 FROM node:10-alpine
-copy app.js app.js
-RUN npm run install
+COPY app.js .
+COPY package.json .
+RUN npm install
 
 ENTRYPOINT ["npm", "start"]
