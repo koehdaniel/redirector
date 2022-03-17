@@ -35,8 +35,7 @@ server.listen(8080, function () {
 
 
 function getMatchingRedirect(data, url){
-  let match;
-  let outputMatch = undefined;
+  let match, outputMatch;
 
   console.log(new Date().toLocaleString() + " >> request: " + url);
 
@@ -48,37 +47,35 @@ function getMatchingRedirect(data, url){
       return elem.req == url;
     }
   })
-  if(match !== undefined){
-    outputMatch = match;
+
+  if(match){
+    outputMatch = Object.assign({}, match);
   }
 
   let replacedUrl;
-  if(outputMatch === undefined){
-    match = data.urls.find(elem => {
-      let mode = elem.mode;
-      
-      //Now Check all pattern redirects
-      if(mode === "pattern") {
-        let regex = url.match(elem.pattern);
-        if(regex === null){
-          //Is not Matching
-          return false;
-        }
 
-        replacedUrl = elem.res;
-        for(let i=1;i<=regex.length;i++){
-          replacedUrl = replacedUrl.replace(new RegExp("\\$" + i, 'g'), regex[i]);
+  if(!outputMatch){
+    match = data.urls.find(elem => {
+      //Now Check all pattern redirects
+      if(elem.mode === "pattern") {
+        let regex = url.match(elem.pattern);
+        if(regex){
+          replacedUrl = elem.res;
+          for(let i=1;i<=regex.length;i++){
+            replacedUrl = replacedUrl.replace(new RegExp("\\$" + i, 'g'), regex[i]);
+          }
+          return true;
         }
-        return true;
       }
     })
   }
-  if(match !== undefined){
-    match.res = replacedUrl;
-    outputMatch = match;
+
+  if(replacedUrl){
+    outputMatch = Object.assign({}, match);
+    outputMatch.res = replacedUrl;
   }
 
-  if(outputMatch?.eval === true){
+  if(outputMatch && outputMatch.eval){
     outputMatch.res = eval(outputMatch.res);
   }
 
