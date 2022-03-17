@@ -5,18 +5,18 @@ const yaml = require('js-yaml');
 let data = yaml.load(fs.readFileSync('config.yml'));
 
 const server = http.createServer(function (req, res) {
-  const url = req.url;
+  // const url = req.url;
   let elem = getMatchingRedirect(data, req.url);
 
   if(elem !== undefined){
-    if(elem.url.mode == "text"){
+    if(elem.mode == "text"){
       res.writeHead(200);
-      res.write(elem.url.res);
+      res.write(elem.res);
       res.end();
     }
     else{
       res.writeHead(302, {
-        location: elem.url.res,
+        location: elem.res,
       });
       res.end();
     }
@@ -24,61 +24,64 @@ const server = http.createServer(function (req, res) {
     // do a 404 redirect
     elem = getMatchingRedirect(data, '404NotFound');
     res.writeHead(404);
-    res.write(elem.url.res);
+    res.write(elem.res);
     res.end();
   }
 });
 
 server.listen(8080, function () {
-  console.log("server started at port 8080");
+  console.log(new Date().toLocaleString() + " >> server started at port 8080");
 });
 
 
 function getMatchingRedirect(data, url){
   let match;
+  let outputMatch = undefined;
+
+  console.log(new Date().toLocaleString() + " >> request: " + url);
 
   match = data.urls.find(elem => {
-    let mode = elem.url.mode;
+    let mode = elem.mode;
 
     //First Check all simple redirects
     if(mode === undefined || mode === 'text') {
-      return elem.url.req == url;
+      return elem.req == url;
     }
   })
   if(match !== undefined){
-    return match;
+    outputMatch = match;
   }
 
   let replacedUrl;
-  match = data.urls.find(elem => {
-    let mode = elem.url.mode;
-    
-    //Now Check all pattern redirects
-    if(mode === "pattern") {
-      let regex = url.match(elem.url.pattern);
-      if(regex === null){
-        //Is not Matching
-        return false;
-      }
+  if(outputMatch === undefined){
+    match = data.urls.find(elem => {
+      let mode = elem.mode;
+      
+      //Now Check all pattern redirects
+      if(mode === "pattern") {
+        let regex = url.match(elem.pattern);
+        if(regex === null){
+          //Is not Matching
+          return false;
+        }
 
-
-      replacedUrl = elem.url.res;
-      for(let i=1;i<=regex.length;i++){
-        replacedUrl = replacedUrl.replace("$" + i, regex[i]);
+        replacedUrl = elem.res;
+        for(let i=1;i<=regex.length;i++){
+          replacedUrl = replacedUrl.replace(new RegExp("\\$" + i, 'g'), regex[i]);
+        }
+        return true;
       }
-      console.log("replacedUrl: " + replacedUrl);
-      return true;
-    }
-  })
-  if(match !== undefined){
-    // let newMatch = Object.assign([], match);
-    // newMatch.url.res = replacedUrl;
-    return {
-      url: {
-        mode: match.url.mode,
-        pattern: match.url.pattern,
-        res: replacedUrl
-      }
-    };
+    })
   }
+  if(match !== undefined){
+    match.res = replacedUrl;
+    outputMatch = match;
+  }
+
+  if(outputMatch?.eval === true){
+    outputMatch.res = eval(outputMatch.res);
+  }
+
+  console.log(new Date().toLocaleString() + " >>> match: " + JSON.stringify(outputMatch));
+  return outputMatch;
 }

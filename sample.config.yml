@@ -1,16 +1,16 @@
 urls:
-- url:
-    req: '/twitter'
-    res: 'https://twitter.com'
-- url:
-    mode: 'text'
-    req: '/text'
-    res: '<h1>Hallo,</h1>Ich bin <b>HTML</b>!'
-- url:
-    mode: 'pattern'
-    pattern: '/goto/([a-z\.]*)/(.*)'
-    res: 'https://$1/$2'
-- url:
-    mode: 'text'
-    req: '404NotFound'
-    res: '<h1>Sorry nix gefunden!<h1>'
+- req: '/twitter'
+  res: 'https://twitter.com'
+- mode: 'text'
+  req: '/text'
+  res: '<h1>Hallo,</h1>Ich bin <b>HTML</b>!'
+- mode: 'pattern'
+  pattern: '/goto/([a-z\.]*)/(.*)'
+  res: 'https://$1/$2'
+- mode: 'text'
+  req: '/text'
+  res: "'Es ist ' + new Date().toLocaleString() + ' Uhr'"
+  eval: true
+- mode: 'text'
+  req: '404NotFound'
+  res: '<h1>Sorry nix gefunden!<h1>'
