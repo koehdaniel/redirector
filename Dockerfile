@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:21-alpine
 COPY app.js .
 COPY package.json .
 RUN npm install
