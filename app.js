@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const yaml = require('js-yaml');
+const TOTP = require('totp-generator').TOTP;
 
 let data = yaml.load(fs.readFileSync('config.yml'));
 
@@ -9,7 +10,7 @@ const server = http.createServer(function (req, res) {
   let elem = getMatchingRedirect(data, req.url);
 
   if(elem !== undefined){
-    if(elem.mode == "text"){
+    if(elem.mode == "text" || elem.print){
       res.writeHead(200);
       res.write(elem.res);
       res.end();
